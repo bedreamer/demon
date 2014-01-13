@@ -1,0 +1,7 @@
+".\demon.obj",
+".\stdafx.obj",
+".\vars.obj",
+".\cmd.obj",
+".\isr.obj" 
+TO "demon" 
+RAMSIZE(256) 

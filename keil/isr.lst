@@ -1,0 +1,105 @@
+C51 COMPILER V9.00   ISR                                                                   01/02/2014 20:58:30 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE ISR
+OBJECT MODULE PLACED IN .\isr.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\source\sub\isr.c LARGE BROWSE DEBUG OBJECTEXTEND PRINT(.\isr.lst) OBJECT
+                    -(.\isr.obj)
+
+line level    source
+
+   1          #include "../include/stdafx.h"
+   2          
+   3          sbit JDQ = P1 ^ 2;
+   4          u16 ttl = 15, times = 0, ttljdq = 0, thizspeed = 100;
+   5          #define RX_SIZE 12
+   6          u8 rx_nr=0, rx_i=0;
+   7          u8 rx_buf[RX_SIZE];
+   8          u8 keypush = 0;
+   9          
+  10          void isr_timer0() interrupt 1
+  11          {
+  12   1          TH0 = 0xD4; //每一次进入中断都要给定时器赋值，以确定下一次进入中断的时间
+  13   1          TL0 = 0xCC;
+  14   1      
+  15   1          P1M1 = 0x00;
+  16   1          P1M0 = 0xFF;
+  17   1          times ++;
+  18   1      
+  19   1          if (P1 & 0xFE)
+  20   1              keypush ++;
+  21   1          else keypush = 0;
+  22   1      /*
+  23   1          if ( keypush > 10)
+  24   1              ENABLE_ALRM;
+  25   1      */
+  26   1          if (!STATUS_MC) {
+  27   2              JDQ = 0;
+  28   2              DISABLE_MC;
+  29   2          } else {
+  30   2              ENABLE_MC;
+  31   2              JDQ = 1;
+  32   2          }
+  33   1      
+  34   1          if ( times >= ttl ) {
+  35   2              times = 0;
+  36   2              jiaobanqi();
+  37   2          }
+  38   1      }
+  39          
+  40          void isr_uart() interrupt 4
+  41          {
+  42   1          u8 t, x;
+  43   1          u8 *rx_cmd = (u8*)&cs;
+  44   1      
+  45   1          if (rx_nr > RX_SIZE) rx_nr = 0;
+  46   1          if (rx_i > RX_SIZE) rx_i = 0;
+  47   1      
+  48   1          if ( RI ) {
+  49   2              RI = 0;
+  50   2              rx_buf[rx_i] = SBUF;
+  51   2              x = rx_buf[rx_i];
+  52   2              if ( rx_buf[0] != 0x55 ) {
+  53   3                  while ( rx_buf[0] != 0x55 && rx_nr > 0) {
+  54   4                      for ( t = 0; t < RX_SIZE - 1; t ++ )
+C51 COMPILER V9.00   ISR                                                                   01/02/2014 20:58:30 PAGE 2   
+
+  55   4                          rx_buf[ t ] = rx_buf[ t + 1 ];
+  56   4                      rx_nr --, rx_i --;
+  57   4                  }
+  58   3                  if ( x == 0x55 ) {
+  59   4                      rx_nr = 1, rx_i = 1;
+  60   4                  }
+  61   3              } else {
+  62   3                  if ( rx_nr == 0 ) { 
+  63   4                      rx_nr = 1, rx_i = 1;
+  64   4                  } else {
+  65   4                      rx_nr ++, rx_i ++;
+  66   4                      if ( rx_nr >= RX_SIZE ) {
+  67   5                          for ( x = 0; x < RX_SIZE; x ++ )
+  68   5                              rx_cmd[ x ]  = rx_buf[ x ];
+  69   5                          for ( x = 0; x < RX_SIZE - 2; x ++ )
+  70   5                              rx_buf[ x ] = rx_buf[ x + 2 ];
+  71   5                          rx_nr --, rx_i --;
+  72   5                          SET_NEW_CMD;
+  73   5                      }
+  74   4                  }
+  75   3              }
+  76   2          } else {
+  77   2              TI = 0;
+  78   2          }
+  79   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    541    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     23       3
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

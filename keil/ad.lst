@@ -1,0 +1,70 @@
+C51 COMPILER V9.00   AD                                                                    10/27/2013 14:05:44 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE AD
+OBJECT MODULE PLACED IN .\ad.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\source\sub\ad.c LARGE BROWSE DEBUG OBJECTEXTEND PRINT(.\ad.lst) OBJECT(.
+                    -\ad.obj)
+
+line level    source
+
+   1          #include "../include/stdafx.h"
+   2          
+   3          sbit MAX_197_CS = P1^7;
+   4          sbit MAX_197_WR = P3^6;
+   5          sbit MAX_197_RD = P3^7;
+   6          sbit MAX_197_HBER=P1^6;
+   7          #define MAX197_CBT P0
+   8          volatile u8  max197_status = 0;
+   9          
+  10          static void max197_read()
+  11          {
+  12   1      }
+  13          
+  14          static u16 max197_write()
+  15          {
+  16   1              return 0;
+  17   1      }
+  18          
+  19          void max197_initialize(void)
+  20          {
+  21   1              MAX_197_CS = 1;
+  22   1              MAX_197_RD = 1;
+  23   1              MAX_197_WR = 1;
+  24   1              max197_status = MAX197_IDLE;
+  25   1      }
+  26          
+  27          void max197_start_ad(u8 ch)
+  28          {
+  29   1              MAX_197_CS = 0;
+  30   1              MAX_197_WR = 0;
+  31   1              MAX197_CBT = 0x00 | (ch & 0x07);
+  32   1              MAX_197_WR = 0;
+  33   1              MAX_197_CS = 1;
+  34   1      }
+  35          
+  36          u16  max197_read_ad(u8 ch)
+  37          {
+  38   1              return 0;
+  39   1      }
+*** WARNING C280 IN LINE 36 OF ..\SOURCE\SUB\AD.C: 'ch': unreferenced local variable
+  40          
+  41          void ext0_int_srv(void) interrupt 0
+  42          {
+  43   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     41    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      1       1
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+C51 COMPILER V9.00   AD                                                                    10/27/2013 14:05:44 PAGE 2   
+
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

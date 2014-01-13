@@ -1,0 +1,1 @@
+"..\source\sub\cmd.c" LARGE BROWSE DEBUG OBJECTEXTEND PRINT(.\cmd.lst) OBJECT(.\cmd.obj)

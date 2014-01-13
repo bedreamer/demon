@@ -1,0 +1,192 @@
+C51 COMPILER V9.01   MAIN                                                                  11/23/2011 10:51:15 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN Main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE Main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          /*
+   2           * MAX485模块
+   3           * 
+   4           * 用途：MAX485模块测试程序
+   5           * 
+   6           * 作者                                 日期                            备注
+   7           * Huafeng Lin                  2011/11/22                      新增
+   8           * Huafeng Lin                  2011/11/22                      修改
+   9           * 
+  10           */
+  11          
+  12          #include <reg52.h>
+  13          #include<stdio.h>
+  14          #include<math.h>
+  15          #include<INTRINS.H>
+  16          
+  17          #define uchar unsigned char
+  18          #define uint  unsigned int
+  19          
+  20          #define DataPort P2        //LCD1602 数据端口
+  21                  
+  22          sbit    LCM_RS=P0^2;   //LCD1602 控制端口               
+  23          sbit    LCM_RW=P0^1;   //LCD1602 控制端口       
+  24          sbit    LCM_EN=P0^0;   //LCD1602 控制端口
+  25          
+  26          uchar DAT2 = 0;
+  27          sbit  CS1 = P1^1;
+  28          sbit  CS2 = P1^2;
+  29          
+  30          //********定义函数*****************************
+  31          void    delay(unsigned int k);
+  32          void    InitLcd();
+  33          void    WriteDataLCM(uchar dataW);
+  34          void    WriteCommandLCM(uchar CMD,uchar Attribc);
+  35          void    DisplayOneChar(uchar X,uchar Y,uchar DData);
+  36          
+  37          //void Delay(uchar k)
+  38          //{
+  39          //    uchar j;
+  40          //    while((k--)!=0)           
+  41          //      {
+  42          //        for(j=0;j<125;j++)
+  43          //      {;}
+  44          //      }
+  45          //}
+  46          
+  47          //*********LCD1602初始化**********************
+  48          void InitLcd()                          
+  49          {                       
+  50   1              WriteCommandLCM(0x38,1);        
+  51   1              WriteCommandLCM(0x08,1);        
+  52   1              WriteCommandLCM(0x01,1);
+  53   1              WriteCommandLCM(0x06,1);        
+  54   1              WriteCommandLCM(0x0c,1);
+  55   1      }
+C51 COMPILER V9.01   MAIN                                                                  11/23/2011 10:51:15 PAGE 2   
+
+  56          
+  57          //**********检测忙信号************************
+  58          void WaitForEnable(void)        
+  59          {                                       
+  60   1              DataPort=0xff;          
+  61   1              LCM_RS=0;LCM_RW=1;_nop_();
+  62   1              LCM_EN=1;_nop_();_nop_();
+  63   1              while(DataPort&0x80);   
+  64   1              LCM_EN=0;                               
+  65   1      }
+  66                                                  
+  67          //**********写命令至LCD***********************
+  68          void WriteCommandLCM(uchar CMD,uchar Attribc)
+  69          {                                       
+  70   1              if(Attribc)WaitForEnable();     
+  71   1              LCM_RS=0;LCM_RW=0;_nop_();
+  72   1              DataPort=CMD;_nop_();   
+  73   1              LCM_EN=1;_nop_();_nop_();LCM_EN=0;
+  74   1      }       
+  75                                          
+  76          //**********写数据至LCD************************
+  77          void WriteDataLCM(uchar dataW)
+  78          {                                       
+  79   1              WaitForEnable();                
+  80   1              LCM_RS=1;LCM_RW=0;_nop_();
+  81   1              DataPort=dataW;_nop_(); 
+  82   1              LCM_EN=1;_nop_();_nop_();LCM_EN=0;
+  83   1      }
+  84                                                  
+  85          //*********写一个字符数据到指定的目标***********
+  86          void DisplayOneChar(uchar X,uchar Y,uchar DData)
+  87          {                                               
+  88   1              Y&=1;                                           
+  89   1              X&=15;                                          
+  90   1              if(Y)X|=0x40;                                   
+  91   1              X|=0x80;                        
+  92   1              WriteCommandLCM(X,0);           
+  93   1              WriteDataLCM(DData);            
+  94   1      }
+  95          
+  96          void display_1602(uchar *DData,X,Y)//显示函数  
+  97          { 
+  98   1              uchar ListLength=0;
+  99   1              Y&=0x01;
+ 100   1              X&=0x0f;
+ 101   1              while(X<16)
+ 102   1              {
+ 103   2                  DisplayOneChar(X,Y,DData[ListLength]);
+ 104   2                  ListLength++;
+ 105   2                  X++;
+ 106   2              }
+ 107   1      }
+ 108          
+ 109          //**********延时函数***************
+ 110          void delay(unsigned int k)      
+ 111          {                                               
+ 112   1              unsigned int i,j;                               
+ 113   1              for(i=0;i<k;i++)
+ 114   1              {                       
+ 115   2                      for(j=0;j<121;j++)                      
+ 116   2                      {;}
+ 117   2              }                                               
+C51 COMPILER V9.01   MAIN                                                                  11/23/2011 10:51:15 PAGE 3   
+
+ 118   1      }
+ 119          
+ 120          void Init(void)
+ 121          {
+ 122   1          TMOD=0x20;          //定时器1，工作方式2              
+ 123   1          TH1=0xfd;           //波特率为9600
+ 124   1          TL1=0xfd;
+ 125   1          PCON=0x00;              
+ 126   1          TR1=1;              //定时器1开始工作 
+ 127   1          SCON=0x50;          //0101 0000B，工作方式1,8位UART，波特率可变，允许接收             
+ 128   1              RI = 0;
+ 129   1              TI = 0;   
+ 130   1      } 
+ 131          
+ 132          void Receive(void)
+ 133          {                       
+ 134   1              while(RI==0)
+ 135   1              {
+ 136   2              ;
+ 137   2              }
+ 138   1              DAT2=SBUF;
+ 139   1              RI=0; 
+ 140   1      }
+ 141          
+ 142          void main(void)
+ 143          {
+ 144   1              delay(10); 
+ 145   1              InitLcd();      //lcd初始化
+ 146   1              display_1602("(C)2011 LCSTUDIO", 0, 0);
+ 147   1      
+ 148   1              //P1 = 0;
+ 149   1              Init();
+ 150   1              CS1 = 0;
+ 151   1              CS2 = 0;
+ 152   1      
+ 153   1              while(1)
+ 154   1              {
+ 155   2                      Receive();
+ 156   2                      delay(100);
+ 157   2                      //P1 = DAT2;
+ 158   2      
+ 159   2                      DisplayOneChar(0, 1, (DAT2/100)+0x30);
+ 160   2                      DisplayOneChar(1, 1, ((DAT2%100)/10)+0x30);
+ 161   2                      DisplayOneChar(2, 1, (DAT2%10)+0x30);
+ 162   2      
+ 163   2                      DisplayOneChar(15, 1, DAT2);
+ 164   2              }
+ 165   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    370    ----
+   CONSTANT SIZE    =     17    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1       8
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

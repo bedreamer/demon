@@ -1,0 +1,57 @@
+/*系统介绍：该系统是将电力系统
+负载电流的大小进行数据采集，
+然后通过数据通信方式将采集到的
+负载电流数据传送到远处的监控室，
+在监控室中进行数据分析。
+由于整个系统复杂，这里只介
+绍A/D转换和数据采集部分*/
+#include <reg52.h>
+#include <stdio.h>
+#include <intrins.h>
+
+sbit P11 = P1^1;   //HBEN口
+int ADL;		   //A/D转换的低8位
+int ADH;		   //A/D转换的高8位
+
+void main()
+{
+    SP = 0x80;
+	IE = 0x82;	   //允许T0中断
+	IP = 0x02;
+	SCON = 0xC0;   //初始化串行口为模式3
+	T2CON = 0x34;
+	RCAP2H = 0xFE;
+	RCAP2L = 0xFE; //设定波特率为172.8kb/s
+	TH2 = 0xFE;
+	TL2 = 0xFE;
+	TMOD = 0x01;   //T0作为定时器，模式1
+	TH0 = 0xFD;
+	TL0 = 0xC0;
+	TR0 = 1;	   //启动T0
+	while(1)	   //等待定时中断
+	{}
+}
+
+void T0INT(void) interrupt 1   //定时中断处理
+{
+    int i;
+	P11 = ~P11;	   //取反
+	TH0 = 0xFD;	   //重赋初值
+	TL0 = 0xC0;
+	P11 = 0;
+	P0 = 0x5B;
+	for(i=0;i<6;i++) //等待
+	{
+	    _nop_();
+	} 
+	ADL = P0;		 //读A/D转换的低8位
+	P11 = 1;
+	ADH = P0;		 //读A/D转换的高8位
+	SBUF = ADL;
+	while(TI==0)	 //等待发送结束
+	TI = 0;
+	SBUF = ADH;
+	while(TI==0);
+	TI = 0;
+
+}

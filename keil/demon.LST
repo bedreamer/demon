@@ -1,0 +1,383 @@
+C51 COMPILER V9.00   DEMON                                                                 01/12/2014 20:23:29 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE DEMON
+OBJECT MODULE PLACED IN .\demon.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\source\main\demon.c LARGE BROWSE DEBUG OBJECTEXTEND PRINT(.\demon.lst) O
+                    -BJECT(.\demon.obj)
+
+line level    source
+
+   1          #include "../include/stdafx.h"
+   2          #if 1
+   3          sbit ADHBEN = P4^6;   //HBEN口
+   4          sbit ADCS = P4^5;
+   5          sbit ADWR = P3^6;
+   6          sbit ADRD = P3^7;
+   7          sbit ADINT0 = P4^4;
+   8          
+   9          //sfr IE2     = 0xAF;                 //中断使能寄存器2
+  10          sfr T4T3M       = 0xD1;                 //定时器3和定时器4控制寄存器
+  11          sfr T4H     = 0xD2;                 //定时器4高8位
+  12          sfr T4L     = 0xD3;                 //定时器4低8位
+  13          sfr T3H     = 0xD4;                 //定时器3高8位
+  14          sfr T3L     = 0xD5;                 //定时器3低8位
+  15          
+  16          sbit JDQ = P1^2;
+  17          
+  18          u16  max197_read_ad(u8 ch);
+  19          void fack_proc(void);
+  20          u8 check_cmd_valid(void);
+  21          static void delay()
+  22          {
+  23   1          u8 seed = 12;
+  24   1          for (;seed; seed --);
+  25   1      }
+  26          #define CHECK_FACK_EWQUEST  fack_proc()
+  27          #define RS485_RX() delay();P1 &= ~0x20
+  28          #define RS485_TX() delay();P1 |= 0x20
+  29          
+  30          void uart_send(const u8 *buf, u8 len)
+  31          {
+  32   1          u8 i;
+  33   1      
+  34   1          RS485_TX();
+  35   1      
+  36   1          for (i=0; i< len ;i ++ ) {
+  37   2              SBUF = buf[ i ];
+  38   2              while(TI==0);
+  39   2              TI = 0;
+  40   2          }
+  41   1      
+  42   1          RS485_RX();
+  43   1      }
+  44          
+  45          #if (CONFIG_ENABLE_AD_DEBUG>=1)
+              void uart_print_u16(u16 d)
+              {
+                  SBUF = d >> 8;
+                  while(TI==0);
+                  TI = 0;
+                  SBUF = d;
+                  while(TI==0);
+                  TI = 0;
+                  SBUF = '\n';
+C51 COMPILER V9.00   DEMON                                                                 01/12/2014 20:23:29 PAGE 2   
+
+                  while(TI==0);
+                  TI = 0;
+              }
+              
+              void uart_printf(char *str)
+              {
+                  while ( * str ) {
+                      SBUF = *str;
+                      while(TI==0);
+                      TI = 0;
+                      str ++;
+                  }
+              }
+              
+              void yy_delay(u16 ttl)
+              {
+                  while (ttl) ttl --;
+              }
+              #else
+  74          #define uart_print_u16(d)
+  75          #define uart_printf(d)
+  76          #define yy_delay(d)
+  77          #endif
+  78          unsigned int tom = 0;
+  79          
+  80          void main()
+  81          {
+  82   1      #if 1
+  83   1          SCON  = 0x50;          // SCON: 模式 1, 8-bit UART, 使能接收  
+  84   1          TMOD |= 0x22;          // TMOD: timer 1, mode 2, 8-bit 重装
+  85   1                                 //       timer 0, mode 2, 16-bit 
+  86   1          TH0   = 0xFF;
+  87   1          TL0   = 0xF7;
+  88   1          TH1   = 0xFD;          // TH1:  重装值 9600 波特率 晶振 11.0592MHz  
+  89   1          TR1   = 1;             // TR1:  timer 1 打开  
+  90   1          TR0   = 1;
+  91   1          ET0   = 1;
+  92   1          ES = 1;
+  93   1      
+  94   1          EA    = 1;             //打开总中断
+  95   1      
+  96   1          P0M1 = 0x00;
+  97   1          P0M0 = 0x00;
+  98   1      
+  99   1          /*---PWM---*/
+ 100   1          CMOD = 0X80;
+ 101   1          CCON = 0X00;
+ 102   1          CH = 0;
+ 103   1          CL = 0;
+ 104   1      
+ 105   1          CCAPM0 = 0x42;
+ 106   1          PCA_PWM0 = 0x00;
+ 107   1      
+ 108   1          CCAPM1 = 0x42;
+ 109   1          PCA_PWM1 = 0x00;
+ 110   1          CR = 1;
+ 111   1      
+ 112   1          CCAP0L = 0;
+ 113   1          CCAP1L = 0;
+ 114   1          CCAP0H = 0;
+ 115   1          CCAP1H = 0;
+ 116   1      
+C51 COMPILER V9.00   DEMON                                                                 01/12/2014 20:23:29 PAGE 3   
+
+ 117   1          /*
+ 118   1          P2M1 &= 0x0F;
+ 119   1          P2M0 |= 0xF0;
+ 120   1          */
+ 121   1      
+ 122   1          /*设置P4^4 5 6 为普通I/O口.*/
+ 123   1          P4SW |= 0x10 | 0x20 | 0x40;
+ 124   1      
+ 125   1          /*P4.4 为ADINT0, 仅输入. */
+ 126   1          P4M1 |= 0x10;
+ 127   1          P4M0 &= ~(0x10);
+ 128   1      
+ 129   1          /*P4.5, P4.6 CS, HBEN 仅推挽输出.*/
+ 130   1          P4M1 &= ~(0x60);
+ 131   1          P4M0 |= 0x60;
+ 132   1      
+ 133   1          ADCS = 1;
+ 134   1          ADWR = 1;
+ 135   1       
+ 136   1          //P1M0 |= 0x04;
+ 137   1          //P1M1 &= ~0x04;
+ 138   1          P1 &= 0xFB;
+ 139   1          #if 0
+                      uart_printf("*******************Welcome to MCU world !******************\n");
+                  uart_printf("####let's begin!\n");
+                  #endif
+ 143   1          P1 |= 0x02;
+ 144   1      
+ 145   1      
+ 146   1          //P3M0 |= 0x3C;
+ 147   1          //P3M1 &= (~0x3C); 
+ 148   1          P3 |= 0x04;
+ 149   1          P3 |= 0x10;
+ 150   1          P3 &= ~(0x08);
+ 151   1          P3 &= ~(0x20);
+ 152   1          
+ 153   1          RS485_RX();
+ 154   1      
+ 155   1              while(1)
+ 156   1              {
+ 157   2              CHECK_FACK_EWQUEST;
+ 158   2              PR0 = max197_read_ad(0);
+ 159   2              CHECK_FACK_EWQUEST;
+ 160   2              PR1 = max197_read_ad(1);
+ 161   2              CHECK_FACK_EWQUEST;
+ 162   2              PR2 = max197_read_ad(2);
+ 163   2              CHECK_FACK_EWQUEST;
+ 164   2              T0 =  max197_read_ad(3);
+ 165   2              CHECK_FACK_EWQUEST;
+ 166   2              T1 =  max197_read_ad(4);
+ 167   2              CHECK_FACK_EWQUEST;
+ 168   2      
+ 169   2              if (!STATUS_M0) {
+ 170   3                  P3 &= ~0x04;
+ 171   3              } else {
+ 172   3                  P3 |= 0x04;
+ 173   3              }
+ 174   2              if (!STATUS_M1) {
+ 175   3                  P3 &= ~0x10;
+ 176   3              } else {
+ 177   3                  P3 |= 0x10;
+ 178   3              }
+C51 COMPILER V9.00   DEMON                                                                 01/12/2014 20:23:29 PAGE 4   
+
+ 179   2              if (!STATUS_J) {
+ 180   3                  P2 &= ~0x08;
+ 181   3              } else {
+ 182   3                  P2 |= 0x08;
+ 183   3              }
+ 184   2      
+ 185   2              if (!STATUS_ALRM) {
+ 186   3                  P1 |= 0x02;
+ 187   3              } else {
+ 188   3                  P1 &= ~0x02;
+ 189   3              }
+ 190   2          }
+ 191   1      #else
+                  P1 |= 0xA2;
+                  while (1) {
+                      for (status = 0; status < 10000; status ++ )
+                          P1 &= 0x00;
+                      for (status = 0; status < 20000; status ++ )
+                          P1 |= 0x02;
+                  }
+              #endif
+ 200   1      }
+ 201          
+ 202          #define AD_DBUS      P0
+ 203          #define AD_START     ADCS = 0; ADWR = 0; ADRD = 1
+ 204          #define AD_STOP      ADWR = 1; ADRD = 1; ADCS = 1
+ 205          u16  max197_read_ad(u8 ch)
+ 206          {
+ 207   1      #if (CONFIG_NEED_ADERR_REPORT>0)
+                  u16 j;
+              #endif /*(CONFIG_NEED_ADERR_REPORT>0)*/
+ 210   1          u16 i;
+ 211   1          u8 adh, adl;
+ 212   1      
+ 213   1          AD_START;
+ 214   1      
+ 215   1          P0M1 = 0x00;
+ 216   1          P0M0 = 0xFF;
+ 217   1          i = 0;
+ 218   1          while (i++<100);
+ 219   1          P0 = 0x40 | (ch & 0x07);
+ 220   1      
+ 221   1          ADCS = 1;
+ 222   1          ADWR = 1;
+ 223   1          i = 0;
+ 224   1          while (i++<100);
+ 225   1      
+ 226   1          P0M1 = 0xFF;
+ 227   1          P0M0 = 0x00;
+ 228   1      
+ 229   1          i = 0;
+ 230   1          ADINT0 = 1;
+ 231   1          while ( ADINT0 && i ++ < 5000 );
+ 232   1      
+ 233   1      #if (CONFIG_NEED_ADERR_REPORT>0)
+                  if ( ADINT0 ) j = 1;
+                  else j = 0;
+              #endif /*(CONFIG_NEED_ADERR_REPORT>0)*/
+ 237   1      
+ 238   1          ADCS = 0;
+ 239   1          ADRD = 0;
+ 240   1          ADHBEN = 0;
+C51 COMPILER V9.00   DEMON                                                                 01/12/2014 20:23:29 PAGE 5   
+
+ 241   1      
+ 242   1          i = 0;
+ 243   1          while (i++<100);       
+ 244   1          adl = AD_DBUS;
+ 245   1      
+ 246   1          ADHBEN = 1;
+ 247   1          i = 0;
+ 248   1          while (i++<100);
+ 249   1          adh = AD_DBUS;
+ 250   1      
+ 251   1          AD_STOP;
+ 252   1      
+ 253   1      #if (CONFIG_ENABLE_AD_DEBUG > 0)
+                  //uart_print_u16(adl | (adh << 8));
+              #endif /*CONFIG_ENABLE_AD_DEBUG*/
+ 256   1      
+ 257   1      #if (CONFIG_NEED_ADERR_REPORT > 0)
+                  return (( adh & 0x0F ) << 8) | adl | (j ? 0x8000 : 0);
+              #else
+ 260   1          return (( adh & 0x0F ) << 8) | adl;
+ 261   1      #endif /*(CONFIG_NEED_ADERR_REPORT>0)*/
+ 262   1      }
+ 263          
+ 264          #define speed_jbq_set V2
+ 265          #define speed_jbq_current now_V2
+ 266          u16 jbq_speed_ttl = 0, e_jbq_speed = 0;
+ 267          void jiaobanqi()
+ 268          {
+ 269   1          const u8 jbqtools[] = {
+ 270   1              0x08, 0x0A, 0x02, 0x06,
+ 271   1              0x04, 0x05, 0x01, 0x09, 0x00
+ 272   1          };
+ 273   1          static u8 thiz = 0;
+ 274   1          u8 _p2;
+ 275   1      
+ 276   1          if ( 0 != speed_jbq_set ) {
+ 277   2      
+ 278   2              if ( speed_jbq_set > speed_jbq_current ) {
+ 279   3                  if (e_jbq_speed > CONFIG_E_JBQ_SPEED) {
+ 280   4                      speed_jbq_current ++;
+ 281   4                      e_jbq_speed = 0;
+ 282   4                  } else {
+ 283   4                      e_jbq_speed ++;
+ 284   4                  }
+ 285   3              } else if ( speed_jbq_set < speed_jbq_current ) {
+ 286   3                  if (e_jbq_speed > CONFIG_E_JBQ_SPEED) {
+ 287   4                      speed_jbq_current --;
+ 288   4                      e_jbq_speed = 0;
+ 289   4                  } else {
+ 290   4                      e_jbq_speed ++;
+ 291   4                  }
+ 292   3              } else {
+ 293   3                  e_jbq_speed = 0;
+ 294   3              }
+ 295   2      
+ 296   2              jbq_speed_ttl ++;
+ 297   2              if ( jbq_speed_ttl > 100 - speed_jbq_current ) {
+ 298   3                  jbq_speed_ttl = 0;
+ 299   3                  if ( jbqtools[ thiz ] == 0 ) thiz = 0;
+ 300   3                  _p2 = P2 & 0x07;
+ 301   3                  P2 = ( (jbqtools[ thiz ] & 0x0F) << 4 )| 0x08 | _p2;
+ 302   3                  thiz ++;
+C51 COMPILER V9.00   DEMON                                                                 01/12/2014 20:23:29 PAGE 6   
+
+ 303   3              }
+ 304   2          } else {
+ 305   2              speed_jbq_current = 0;
+ 306   2          }
+ 307   1      }
+ 308          #endif
+ 309          
+ 310          void fack_proc()
+ 311          {
+ 312   1          CMD_SRV_PROC src_proc;
+ 313   1          u8 i, j;
+ 314   1      
+ 315   1          if ( STATUS_NEW_CMD ) {
+ 316   2              if ( check_cmd_valid() ) {
+ 317   3      
+ 318   3                  i = i_srv[ valid_cs.cmd ];
+ 319   3                  src_proc = cmd_srvs[ i ];
+ 320   3      
+ 321   3                  (*src_proc)();
+ 322   3                  rcv_chars = 0;
+ 323   3      
+ 324   3                  rs.crc = crc16((u8*)&rs, sizeof(struct return_struct) - sizeof(u16));
+ 325   3                  i = rs.crc & 0xFF;
+ 326   3                  j = rs.crc >> 8;
+ 327   3                  rs.crc = (i << 8) | j;
+ 328   3                  //memcpy(&rs, &cs, sizeof(rs));
+ 329   3                  uart_send((u8*)&rs, sizeof(rs));
+ 330   3      
+ 331   3              }
+ 332   2              CLR_NEW_CMD;
+ 333   2          }
+ 334   1          return;
+ 335   1      }
+ 336          
+ 337          u8 check_cmd_valid()
+ 338          {
+ 339   1          u16 crc = crc16((u8*)&cs, sizeof(cs)-2);
+ 340   1          u8 h, l;
+ 341   1          h = crc & 0xff;
+ 342   1          l = crc >> 8;
+ 343   1          crc = (h << 8) | l;
+ 344   1          if (crc == cs.crc ) {
+ 345   2              memcpy(&valid_cs, &cs, sizeof(cs));
+ 346   2              return 1;
+ 347   2          }
+ 348   1          return 0;
+ 349   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    903    ----
+   CONSTANT SIZE    =      9    ----
+   XDATA SIZE       =      7      12
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

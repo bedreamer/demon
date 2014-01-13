@@ -1,0 +1,448 @@
+C51 COMPILER V9.00   CMD                                                                   01/12/2014 20:05:34 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE CMD
+OBJECT MODULE PLACED IN .\cmd.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\source\sub\cmd.c LARGE BROWSE DEBUG OBJECTEXTEND PRINT(.\cmd.lst) OBJECT
+                    -(.\cmd.obj)
+
+line level    source
+
+   1          #include "../include/stdafx.h"
+   2          code u8 chCRCHTalbe[]={                          // CRC 高位字节值表
+   3          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+   4          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+   5          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+   6          0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+   7          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+   8          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+   9          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+  10          0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+  11          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+  12          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+  13          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+  14          0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+  15          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+  16          0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+  17          0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+  18          0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+  19          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+  20          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x00, 0xC1, 0x81, 0x40,
+  21          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+  22          0x00, 0xC1, 0x81, 0x40, 0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41,
+  23          0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
+  24          0x00, 0xC1, 0x81, 0x40};
+  25          code u8 chCRCLTalbe[]={                          // CRC 低位字节值表
+  26          0x00, 0xC0, 0xC1, 0x01, 0xC3, 0x03, 0x02, 0xC2, 0xC6, 0x06, 0x07, 0xC7,
+  27          0x05, 0xC5, 0xC4, 0x04, 0xCC, 0x0C, 0x0D, 0xCD, 0x0F, 0xCF, 0xCE, 0x0E,
+  28          0x0A, 0xCA, 0xCB, 0x0B, 0xC9, 0x09, 0x08, 0xC8, 0xD8, 0x18, 0x19, 0xD9,
+  29          0x1B, 0xDB, 0xDA, 0x1A, 0x1E, 0xDE, 0xDF, 0x1F, 0xDD, 0x1D, 0x1C, 0xDC,
+  30          0x14, 0xD4, 0xD5, 0x15, 0xD7, 0x17, 0x16, 0xD6, 0xD2, 0x12, 0x13, 0xD3,
+  31          0x11, 0xD1, 0xD0, 0x10, 0xF0, 0x30, 0x31, 0xF1, 0x33, 0xF3, 0xF2, 0x32,
+  32          0x36, 0xF6, 0xF7, 0x37, 0xF5, 0x35, 0x34, 0xF4, 0x3C, 0xFC, 0xFD, 0x3D,
+  33          0xFF, 0x3F, 0x3E, 0xFE, 0xFA, 0x3A, 0x3B, 0xFB, 0x39, 0xF9, 0xF8, 0x38,
+  34          0x28, 0xE8, 0xE9, 0x29, 0xEB, 0x2B, 0x2A, 0xEA, 0xEE, 0x2E, 0x2F, 0xEF,
+  35          0x2D, 0xED, 0xEC, 0x2C, 0xE4, 0x24, 0x25, 0xE5, 0x27, 0xE7, 0xE6, 0x26,
+  36          0x22, 0xE2, 0xE3, 0x23, 0xE1, 0x21, 0x20, 0xE0, 0xA0, 0x60, 0x61, 0xA1,
+  37          0x63, 0xA3, 0xA2, 0x62, 0x66, 0xA6, 0xA7, 0x67, 0xA5, 0x65, 0x64, 0xA4,
+  38          0x6C, 0xAC, 0xAD, 0x6D, 0xAF, 0x6F, 0x6E, 0xAE, 0xAA, 0x6A, 0x6B, 0xAB,
+  39          0x69, 0xA9, 0xA8, 0x68, 0x78, 0xB8, 0xB9, 0x79, 0xBB, 0x7B, 0x7A, 0xBA,
+  40          0xBE, 0x7E, 0x7F, 0xBF, 0x7D, 0xBD, 0xBC, 0x7C, 0xB4, 0x74, 0x75, 0xB5,
+  41          0x77, 0xB7, 0xB6, 0x76, 0x72, 0xB2, 0xB3, 0x73, 0xB1, 0x71, 0x70, 0xB0,
+  42          0x50, 0x90, 0x91, 0x51, 0x93, 0x53, 0x52, 0x92, 0x96, 0x56, 0x57, 0x97,
+  43          0x55, 0x95, 0x94, 0x54, 0x9C, 0x5C, 0x5D, 0x9D, 0x5F, 0x9F, 0x9E, 0x5E,
+  44          0x5A, 0x9A, 0x9B, 0x5B, 0x99, 0x59, 0x58, 0x98, 0x88, 0x48, 0x49, 0x89,
+  45          0x4B, 0x8B, 0x8A, 0x4A, 0x4E, 0x8E, 0x8F, 0x4F, 0x8D, 0x4D, 0x4C, 0x8C,
+  46          0x44, 0x84, 0x85, 0x45, 0x87, 0x47, 0x46, 0x86, 0x82, 0x42, 0x43, 0x83,
+  47          0x41, 0x81, 0x80, 0x40};
+  48          
+  49          void cmd_nop_srv() reentrant;
+  50          void cmd_rd_tmp0_srv() reentrant;
+  51          void cmd_rd_tmp1_srv() reentrant;
+  52          void cmd_rd_p0_srv() reentrant;
+  53          void cmd_rd_p1_srv() reentrant;
+  54          void cmd_rd_p2_srv() reentrant;
+C51 COMPILER V9.00   CMD                                                                   01/12/2014 20:05:34 PAGE 2   
+
+  55          void cmd_rd_speed0_srv() reentrant;
+  56          void cmd_rd_speed1_srv() reentrant;
+  57          void cmd_rd_speed2_srv() reentrant;
+  58          void cmd_wr_speed0_srv() reentrant;
+  59          void cmd_wr_speed1_srv() reentrant;
+  60          void cmd_wr_speed2_srv() reentrant;
+  61          void cmd_en_mc_srv() reentrant;
+  62          void cmd_en_m0_srv() reentrant;
+  63          void cmd_en_m1_srv() reentrant;
+  64          void cmd_en_m_srv() reentrant;
+  65          void cmd_en_j_srv() reentrant;
+  66          void cmd_dis_mc_srv() reentrant;
+  67          void cmd_dis_m0_srv() reentrant;
+  68          void cmd_dis_m1_srv() reentrant;
+  69          void cmd_dis_m_srv() reentrant;
+  70          void cmd_dis_j_srv() reentrant;
+  71          void cmd_en_alrm_srv() reentrant;
+  72          void cmd_dis_alrm_srv() reentrant;
+  73          void cmd_init_srv() reentrant;
+  74          void cmd_halt_srv() reentrant;
+  75          void cmd_ud_srv() reentrant;
+  76          void cmd_na0_srv() reentrant;
+  77          void cmd_na1_srv() reentrant;
+  78          
+  79          const CMD_SRV_PROC cmd_srvs[] = {
+  80                  cmd_nop_srv,
+  81                  cmd_rd_tmp0_srv,
+  82                  cmd_rd_tmp1_srv,
+  83                  cmd_rd_p0_srv,
+  84                  cmd_rd_p1_srv,
+  85                  cmd_rd_p2_srv,
+  86                  cmd_rd_speed0_srv,
+  87                  cmd_rd_speed1_srv,
+  88                  cmd_rd_speed2_srv,
+  89                  cmd_wr_speed0_srv,
+  90                  cmd_wr_speed1_srv,
+  91                  cmd_wr_speed2_srv,
+  92                  cmd_en_mc_srv,
+  93                  cmd_en_m0_srv,
+  94                  cmd_en_m1_srv,
+  95                  cmd_en_m_srv,
+  96                  cmd_en_j_srv,
+  97                  cmd_dis_mc_srv,
+  98                  cmd_dis_m0_srv,
+  99                  cmd_dis_m1_srv,
+ 100                  cmd_dis_m_srv,
+ 101                  cmd_dis_j_srv,
+ 102                  cmd_en_alrm_srv,
+ 103                  cmd_dis_alrm_srv,
+ 104                  cmd_init_srv,
+ 105                  cmd_halt_srv,
+ 106                  cmd_ud_srv,
+ 107                  cmd_na0_srv,
+ 108                  cmd_na1_srv
+ 109          };
+ 110          code u8 i_srv[] = {
+ 111          0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 
+ 112          22, 23, 24, 25,
+ 113          26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+ 114          26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+ 115          26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+ 116          26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+C51 COMPILER V9.00   CMD                                                                   01/12/2014 20:05:34 PAGE 3   
+
+ 117          26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+ 118          26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+ 119          26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+ 120          26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+ 121          26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+ 122          26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+ 123          26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+ 124          26, 26,
+ 125          27, 28
+ 126          };
+ 127          
+ 128          void cmd_nop_srv() reentrant
+ 129          {
+ 130   1              rs.addr = addr;
+ 131   1              rs.rt = status & MASK_UNSED;
+ 132   1              rs.rsv = valid_cs.cmd;
+ 133   1      }
+ 134          
+ 135          void cmd_rd_tmp0_srv() reentrant
+ 136          {
+ 137   1              rs.addr = addr;
+ 138   1              rs.rt = T0 & 0x0000FFFF;
+ 139   1              rs.rsv = valid_cs.cmd;
+ 140   1      }
+ 141          
+ 142          void cmd_rd_tmp1_srv() reentrant
+ 143          {
+ 144   1              rs.addr = addr;
+ 145   1              rs.rt = T1 & 0x0000FFFF;
+ 146   1              rs.rsv = valid_cs.cmd;
+ 147   1      }
+ 148          
+ 149          void cmd_rd_p0_srv() reentrant
+ 150          {
+ 151   1              rs.addr = addr;
+ 152   1              rs.rt = PR0 & 0x0000FFFF;
+ 153   1              rs.rsv = valid_cs.cmd;
+ 154   1      }
+ 155          
+ 156          void cmd_rd_p1_srv() reentrant
+ 157          {
+ 158   1              rs.addr = addr;
+ 159   1              rs.rt = PR1 & 0x0000FFFF;
+ 160   1              rs.rsv = valid_cs.cmd;
+ 161   1      }
+ 162          
+ 163          void cmd_rd_p2_srv() reentrant
+ 164          {
+ 165   1              rs.addr = addr;
+ 166   1              rs.rt = PR2 & 0x0000FFFF;
+ 167   1              rs.rsv = valid_cs.cmd;
+ 168   1      }
+ 169          
+ 170          void cmd_rd_speed0_srv() reentrant
+ 171          {
+ 172   1              rs.addr = addr;
+ 173   1              rs.rt = now_V0 & 0x000000FF;
+ 174   1              rs.rsv = valid_cs.cmd;
+ 175   1      }
+ 176          
+ 177          void cmd_rd_speed1_srv() reentrant
+ 178          {
+C51 COMPILER V9.00   CMD                                                                   01/12/2014 20:05:34 PAGE 4   
+
+ 179   1              rs.addr = addr;
+ 180   1              rs.rt = now_V1 & 0x000000FF;
+ 181   1              rs.rsv = valid_cs.cmd;
+ 182   1      }
+ 183          
+ 184          void cmd_rd_speed2_srv() reentrant
+ 185          {
+ 186   1              rs.addr = addr;
+ 187   1              rs.rt = now_V2 & 0x000000FF;
+ 188   1              rs.rsv = valid_cs.cmd;
+ 189   1      }
+ 190          
+ 191          void cmd_wr_speed0_srv() reentrant
+ 192          {
+ 193   1              rs.addr = addr;
+ 194   1              rs.rt = status & MASK_UNSED;
+ 195   1              rs.rsv = valid_cs.cmd;
+ 196   1      
+ 197   1      /*
+ 198   1              if ( (valid_cs.parm >> 24) > 100 ) {
+ 199   1              rs.rt = 0xff;
+ 200   1              } else {
+ 201   1      */        
+ 202   1          CCAP0H = 255 - valid_cs.parm;
+ 203   1          rs.rt = 255 - CCAP0H;
+ 204   1      /*      }*/
+ 205   1      }
+ 206          
+ 207          void cmd_wr_speed1_srv() reentrant
+ 208          {
+ 209   1              rs.addr = addr;
+ 210   1              rs.rt = status & MASK_UNSED;
+ 211   1              rs.rsv = valid_cs.cmd;
+ 212   1      
+ 213   1      
+ 214   1              if ( (valid_cs.parm  >> 24) > 100 ) {
+ 215   2              rs.rt = 0xff;
+ 216   2              } else {
+ 217   2              CCAP1H = 255 - valid_cs.parm;
+ 218   2              rs.rt = 255 - CCAP1H;
+ 219   2              }
+ 220   1      }
+ 221          
+ 222          void cmd_wr_speed2_srv() reentrant
+ 223          {
+ 224   1              rs.addr = addr;
+ 225   1              rs.rt = status & MASK_UNSED;
+ 226   1              rs.rsv = valid_cs.cmd;
+ 227   1      
+ 228   1              if ( (valid_cs.parm >> 24) > 100 ) {
+ 229   2              } else {
+ 230   2              V2 = valid_cs.parm;
+ 231   2              }
+ 232   1      }
+ 233          
+ 234          void cmd_en_mc_srv() reentrant
+ 235          {
+ 236   1              ENABLE_MC;
+ 237   1      
+ 238   1              rs.addr = addr;
+ 239   1              rs.rt = status & MASK_UNSED;
+ 240   1              rs.rsv = valid_cs.cmd;
+C51 COMPILER V9.00   CMD                                                                   01/12/2014 20:05:34 PAGE 5   
+
+ 241   1      }
+ 242          
+ 243          void cmd_en_m0_srv() reentrant
+ 244          {
+ 245   1              ENABLE_M0;
+ 246   1      
+ 247   1              rs.addr = addr;
+ 248   1              rs.rt = status & MASK_UNSED;
+ 249   1              rs.rsv = valid_cs.cmd;
+ 250   1      }
+ 251          
+ 252          void cmd_en_m1_srv() reentrant
+ 253          {
+ 254   1              ENABLE_M1;
+ 255   1      
+ 256   1              rs.addr = addr;
+ 257   1              rs.rt = status & MASK_UNSED;
+ 258   1              rs.rsv = valid_cs.cmd;
+ 259   1      }
+ 260          
+ 261          void cmd_en_m_srv() reentrant
+ 262          {
+ 263   1              ENABLE_MC;
+ 264   1              ENABLE_M0;
+ 265   1              ENABLE_M1;
+ 266   1      
+ 267   1              rs.addr = addr;
+ 268   1              rs.rt = status & MASK_UNSED;
+ 269   1              rs.rsv = valid_cs.cmd;
+ 270   1      }
+ 271          
+ 272          void cmd_en_j_srv() reentrant
+ 273          {
+ 274   1              ENABLE_J;
+ 275   1      
+ 276   1              rs.addr = addr;
+ 277   1              rs.rt = status & MASK_UNSED;
+ 278   1              rs.rsv = valid_cs.cmd;
+ 279   1      }
+ 280          
+ 281          void cmd_dis_mc_srv() reentrant
+ 282          {
+ 283   1              DISABLE_MC;
+ 284   1      
+ 285   1              rs.addr = addr;
+ 286   1              rs.rt = status & MASK_UNSED;
+ 287   1              rs.rsv = valid_cs.cmd;
+ 288   1      }
+ 289          
+ 290          void cmd_dis_m0_srv() reentrant
+ 291          {
+ 292   1              DISABLE_M0;
+ 293   1      
+ 294   1              rs.addr = addr;
+ 295   1              rs.rt = status & MASK_UNSED;
+ 296   1              rs.rsv = valid_cs.cmd;
+ 297   1      }
+ 298          
+ 299          void cmd_dis_m1_srv() reentrant
+ 300          {
+ 301   1              DISABLE_M1;
+ 302   1      
+C51 COMPILER V9.00   CMD                                                                   01/12/2014 20:05:34 PAGE 6   
+
+ 303   1              rs.addr = addr;
+ 304   1              rs.rt = status & MASK_UNSED;
+ 305   1              rs.rsv = valid_cs.cmd;
+ 306   1      }
+ 307          
+ 308          void cmd_dis_m_srv() reentrant
+ 309          {
+ 310   1              DISABLE_MC;
+ 311   1              DISABLE_M0;
+ 312   1              DISABLE_M1;
+ 313   1      
+ 314   1              rs.addr = addr;
+ 315   1              rs.rt = status & MASK_UNSED;
+ 316   1              rs.rsv = valid_cs.cmd;
+ 317   1      }
+ 318          
+ 319          void cmd_dis_j_srv() reentrant
+ 320          {
+ 321   1              DISABLE_J;
+ 322   1      
+ 323   1              rs.addr = addr;
+ 324   1              rs.rt = status & MASK_UNSED;
+ 325   1              rs.rsv = valid_cs.cmd;
+ 326   1      }
+ 327          
+ 328          void cmd_en_alrm_srv() reentrant
+ 329          {
+ 330   1              ENABLE_ALRM;
+ 331   1          keypush = 90;
+ 332   1      
+ 333   1          alrm = 1;
+ 334   1              rs.addr = addr;
+ 335   1              rs.rt = status & MASK_UNSED;
+ 336   1              rs.rsv = valid_cs.cmd;
+ 337   1      }
+ 338          
+ 339          void cmd_dis_alrm_srv() reentrant
+ 340          {
+ 341   1              DISABLE_ALRM;
+ 342   1      
+ 343   1          alrm = 0;
+ 344   1          keypush = 0;
+ 345   1              rs.addr = addr;
+ 346   1              rs.rt = status & MASK_UNSED;
+ 347   1              rs.rsv = valid_cs.cmd;
+ 348   1      }
+ 349          
+ 350          void cmd_init_srv() reentrant
+ 351          {
+ 352   1              rs.addr = addr;
+ 353   1              rs.rt = status & MASK_UNSED;
+ 354   1              rs.rsv = valid_cs.cmd;
+ 355   1      
+ 356   1              if ( (valid_cs.parm & 0x000000FF) > 100 ||
+ 357   1                   (valid_cs.parm & 0x0000FF00) > 100 ||
+ 358   1                       (valid_cs.parm & 0x00FF0000) > 100 ||
+ 359   1                       (valid_cs.parm & 0xFF000000) !=0xAA ) {
+ 360   2              } else {
+ 361   2              }
+ 362   1      }
+ 363          
+ 364          void cmd_halt_srv() reentrant
+C51 COMPILER V9.00   CMD                                                                   01/12/2014 20:05:34 PAGE 7   
+
+ 365          {
+ 366   1              DISABLE_MC;
+ 367   1              DISABLE_M0;
+ 368   1              DISABLE_M1;
+ 369   1              DISABLE_J;
+ 370   1      
+ 371   1              rs.addr = addr;
+ 372   1              rs.rt = status & MASK_UNSED;
+ 373   1              rs.rsv = valid_cs.cmd;
+ 374   1      }
+ 375          
+ 376          void cmd_ud_srv() reentrant
+ 377          {
+ 378   1              rs.addr = addr;
+ 379   1              rs.rt = status & MASK_UNSED;
+ 380   1              rs.rsv = valid_cs.cmd;
+ 381   1      }
+ 382          
+ 383          void cmd_na0_srv() reentrant
+ 384          {
+ 385   1              rs.addr = addr;
+ 386   1              rs.rt = status & MASK_UNSED;
+ 387   1              rs.rsv = valid_cs.cmd;
+ 388   1      }
+ 389          
+ 390          void cmd_na1_srv() reentrant
+ 391          {
+ 392   1              rs.addr = addr;
+ 393   1              rs.rt = status & MASK_UNSED;
+ 394   1              rs.rsv = valid_cs.cmd;
+ 395   1      }
+ 396          
+ 397          u16 crc16(u8 *pchMsg, u8 wDataLen)
+ 398          {
+ 399   1          unsigned char chCRCHi;
+ 400   1          unsigned char chCRCLo;
+ 401   1          unsigned char wIndex;           // CRC循环中的索引
+ 402   1          chCRCHi = 0xFF;                 // 高CRC字节初始化
+ 403   1          chCRCLo = 0xFF;                 // 低CRC字节初始化
+ 404   1          while (wDataLen--)
+ 405   1          {                               // 计算CRC
+ 406   2              wIndex = chCRCLo ^ *(pchMsg++);
+ 407   2              chCRCLo = chCRCHi ^ chCRCHTalbe[wIndex];
+ 408   2              chCRCHi =chCRCLTalbe[wIndex];
+ 409   2          }
+ 410   1          return (u16) ((unsigned int) ((chCRCHi << 8) + chCRCLo));
+ 411   1      }
+ 412          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2066    ----
+   CONSTANT SIZE    =    762    ----
+   XDATA SIZE       =     87       4
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

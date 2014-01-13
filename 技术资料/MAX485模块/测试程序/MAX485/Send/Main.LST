@@ -1,0 +1,103 @@
+C51 COMPILER V9.01   MAIN                                                                  11/22/2011 11:14:30 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN Main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE Main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          /*
+   2           * MAX485模块
+   3           * 
+   4           * 用途：MAX485模块接收测试程序
+   5           * 
+   6           * 作者                                 日期                            备注
+   7           * Huafeng Lin                  2011/11/22                      新增
+   8           * Huafeng Lin                  2011/11/22                      修改
+   9           * 
+  10           */
+  11          
+  12          #include <reg52.h>
+  13          
+  14          #define uchar unsigned char
+  15          #define uint  unsigned int
+  16          
+  17          uchar DAT = 0;
+  18          
+  19          sbit Key1 = P3^2;
+  20          sbit CS   = P2^1;
+  21          
+  22          void Delay(uint k)
+  23              {
+  24   1              uchar j;
+  25   1              while((k--)!=0)           
+  26   1                      {
+  27   2                      for(j=0;j<125;j++)
+  28   2                              {;}
+  29   2                      }
+  30   1          }
+  31          
+  32          
+  33          void Init(void)
+  34          {
+  35   1          TMOD=0x20;          //定时器1，工作方式2              
+  36   1          TH1=0xfd;           //波特率为9600
+  37   1          TL1=0xfd;
+  38   1          PCON=0x00;              
+  39   1          TR1=1;              //定时器1开始工作 
+  40   1          SCON=0x50;          //0101 0000B，工作方式1,8位UART，波特率可变，允许接收             
+  41   1              RI = 0;
+  42   1              TI = 0;           
+  43   1      }            
+  44          
+  45          void KeyCount(void)
+  46          {
+  47   1               if(Key1 == 0)
+  48   1               {
+  49   2                        Delay(50);
+  50   2                        if(Key1 == 0)
+  51   2                        {
+  52   3                              DAT++;
+  53   3                        }
+  54   2               }
+  55   1      }
+C51 COMPILER V9.01   MAIN                                                                  11/22/2011 11:14:30 PAGE 2   
+
+  56                                        
+  57          void Send(uchar ShowData)
+  58          {
+  59   1              SBUF=ShowData;                  //写发送寄存器
+  60   1              while(TI==0)                    //等待串行发送完成
+  61   1              {
+  62   2              ;
+  63   2              }
+  64   1              TI=0;                                   //对标志位清零
+  65   1      }
+  66          
+  67          void main(void)
+  68          {
+  69   1              //P1 = 0;
+  70   1          Init();
+  71   1              CS = 1;
+  72   1          while(1)
+  73   1          {
+  74   2                      KeyCount();
+  75   2              Send(DAT);
+  76   2              Delay(100);
+  77   2          }
+  78   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     90    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
